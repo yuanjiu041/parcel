@@ -1,4 +1,3 @@
-// Node 8 supports native async functions - no need to use compiled code!
-module.exports = parseInt(process.versions.node, 10) < 8
-  ? require('./lib/Orchestrator')
-  : require('./src/Orchestrator');
+module.exports = process.env.PARCEL_DEV
+  ? require('babel-register') && require('./src/Parcel').default
+  : require('./lib/Parcel');
