@@ -5,9 +5,9 @@ const {mkdirp} = require('@parcel/fs');
 const path = require('path');
 
 class PackagerRunner {
-  constructor({ parcelConfig, cliOpts }) {
+  constructor({parcelConfig, cliOpts}) {
     this.parcelConfig = parcelConfig;
-    this.cache = new Cache({ parcelConfig, cliOpts });
+    this.cache = new Cache({parcelConfig, cliOpts});
     this.dirExists = false;
   }
 
@@ -15,20 +15,21 @@ class PackagerRunner {
     return require('@parcel/packager-js');
   }
 
-  async runPackager({ bundle }) {
+  async runPackager({bundle}) {
     let packager = await this.loadPackager();
 
-    let modulesContents = await Promise.all(bundle.assets.map(async asset => {
-      // let fileContents = await packager.readFile({
-      //   filePath: asset.code,
-      // });
+    let modulesContents = await Promise.all(
+      bundle.assets.map(async asset => {
+        // let fileContents = await packager.readFile({
+        //   filePath: asset.code,
+        // });
+        let blobs = await this.cache.readBlobs(asset);
 
-      await this.cache.readBlobs(asset);
+        let result = await packager.asset({blobs});
 
-      let result = await packager.asset(asset);
-
-      return result;
-    }));
+        return result;
+      })
+    );
 
     let packageFileContents = await packager.package(modulesContents);
 
@@ -39,7 +40,7 @@ class PackagerRunner {
 
     await packager.writeFile({
       filePath: bundle.destPath,
-      fileContents: packageFileContents,
+      fileContents: packageFileContents
     });
   }
 }
